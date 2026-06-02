@@ -22,7 +22,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn('h-full', 'antialiased', inter.variable, 'font-sans', geist.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn('h-full', 'antialiased', inter.variable, 'font-sans', geist.variable)}>
       <body className="h-full bg-background text-foreground">
         <ThemeProvider
           attribute="class"
