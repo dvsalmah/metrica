@@ -1,8 +1,6 @@
 'use client';
 
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -13,7 +11,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { Clock, TrendingUp, DollarSign, Activity } from 'lucide-react';
-import type { CalculationResults, MacroInputs, MonthlyCashflow } from '@/src/types';
+import type { CalculationResults, MacroInputs, MonthlyCashflow } from '@/lib/types';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -49,7 +47,7 @@ interface MetricCardProps {
   label: string;
   value: string;
   icon: React.ReactNode;
-  accent: string;          // Tailwind gradient classes
+  accent: string;
   highlight?: 'green' | 'red' | 'amber' | null;
 }
 
@@ -75,7 +73,6 @@ function MetricCard({ id, label, value, icon, accent, highlight }: MetricCardPro
         group
       "
     >
-      {/* Background gradient blob */}
       <div
         className={`
           absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-10
@@ -83,8 +80,6 @@ function MetricCard({ id, label, value, icon, accent, highlight }: MetricCardPro
           ${accent}
         `}
       />
-
-      {/* Icon */}
       <div
         className={`
           flex items-center justify-center
@@ -94,13 +89,9 @@ function MetricCard({ id, label, value, icon, accent, highlight }: MetricCardPro
       >
         {icon}
       </div>
-
-      {/* Label */}
       <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">
         {label}
       </p>
-
-      {/* Value */}
       <p className={`text-2xl font-bold tabular-nums ${valueColor}`}>
         {value}
       </p>
@@ -155,14 +146,12 @@ export default function RightPanel({
   cashflows,
   inputs,
 }: RightPanelProps) {
-  // Build cumulative cashflow series for the chart
   let cumulative = -Math.abs(inputs.initialInvestment);
   const chartData = cashflows.map(({ month, netCashflow }) => {
     cumulative += netCashflow;
     return { month, cumulative };
   });
 
-  // PBP card highlight
   const pbpHighlight: 'green' | 'red' | 'amber' | null =
     results.pbp === null
       ? 'red'
@@ -170,7 +159,6 @@ export default function RightPanel({
       ? 'green'
       : 'amber';
 
-  // NPV highlight
   const npvHighlight: 'green' | 'red' | null =
     results.npv > 0 ? 'green' : results.npv < 0 ? 'red' : null;
 
@@ -189,7 +177,6 @@ export default function RightPanel({
         </div>
 
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          {/* PBP */}
           <MetricCard
             id="metric-pbp"
             label="Payback Period"
@@ -198,8 +185,6 @@ export default function RightPanel({
             accent="bg-gradient-to-br from-violet-500 to-purple-600"
             highlight={pbpHighlight}
           />
-
-          {/* ROI */}
           <MetricCard
             id="metric-roi"
             label="ROI"
@@ -208,8 +193,6 @@ export default function RightPanel({
             accent="bg-gradient-to-br from-emerald-500 to-teal-600"
             highlight={results.roi > 0 ? 'green' : results.roi < 0 ? 'red' : null}
           />
-
-          {/* NPV */}
           <MetricCard
             id="metric-npv"
             label="NPV"
@@ -222,21 +205,16 @@ export default function RightPanel({
             accent="bg-gradient-to-br from-sky-500 to-blue-600"
             highlight={npvHighlight}
           />
-
-          {/* IRR */}
           <MetricCard
             id="metric-irr"
             label="IRR (Annual)"
-            value={
-              isNaN(results.irr) ? '—' : formatPercent(results.irr)
-            }
+            value={isNaN(results.irr) ? '—' : formatPercent(results.irr)}
             icon={<Activity className="w-5 h-5 text-white" />}
             accent="bg-gradient-to-br from-orange-500 to-rose-600"
             highlight={results.irr > 0 ? 'green' : results.irr < 0 ? 'red' : null}
           />
         </div>
 
-        {/* PBP ideal hint */}
         {results.pbp !== null && (
           <p
             className={`mt-3 text-xs font-medium ${
@@ -289,13 +267,7 @@ export default function RightPanel({
                   <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
                 </linearGradient>
               </defs>
-
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#1e293b"
-                vertical={false}
-              />
-
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
               <XAxis
                 dataKey="month"
                 tick={{ fill: '#64748b', fontSize: 11 }}
@@ -309,7 +281,6 @@ export default function RightPanel({
                   fontSize: 11,
                 }}
               />
-
               <YAxis
                 tickFormatter={(v) => formatCurrency(v as number)}
                 tick={{ fill: '#64748b', fontSize: 11 }}
@@ -317,10 +288,7 @@ export default function RightPanel({
                 axisLine={false}
                 width={70}
               />
-
               <Tooltip content={<ChartTooltip />} />
-
-              {/* Break-even reference line */}
               <ReferenceLine
                 y={0}
                 stroke="#7c3aed"
@@ -333,7 +301,6 @@ export default function RightPanel({
                   fontSize: 11,
                 }}
               />
-
               <Area
                 type="monotone"
                 dataKey="cumulative"

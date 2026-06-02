@@ -1,7 +1,7 @@
 'use client';
 
 import { DollarSign, Percent, TrendingUp, Clock } from 'lucide-react';
-import type { UseFinancialDataReturn } from '@/src/hooks/use-financial-data';
+import type { UseFinancialDataReturn } from '@/lib/types';
 
 interface LeftPanelProps {
   hook: UseFinancialDataReturn;
@@ -27,8 +27,9 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
         flex flex-col gap-6
         w-full lg:w-[380px] xl:w-[420px] shrink-0
         overflow-y-auto
-        bg-slate-900/60 backdrop-blur-sm
-        border-r border-slate-800/60
+        bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm
+        border-r border-slate-200 dark:border-slate-800/60
+        transition-colors duration-300
         p-6
       "
     >
@@ -66,8 +67,8 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                 }
                 className="
                   w-full pl-9 pr-4 py-2.5 rounded-xl
-                  bg-slate-800/80 border border-slate-700/60
-                  text-slate-100 text-sm placeholder-slate-600
+                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
+                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
                   focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50
                   transition-all duration-200
                   [appearance:textfield]
@@ -103,8 +104,8 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                 }
                 className="
                   w-full pl-9 pr-4 py-2.5 rounded-xl
-                  bg-slate-800/80 border border-slate-700/60
-                  text-slate-100 text-sm placeholder-slate-600
+                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
+                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
                   focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50
                   transition-all duration-200
                   [appearance:textfield]
@@ -139,8 +140,8 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                 }
                 className="
                   w-full pl-9 pr-4 py-2.5 rounded-xl
-                  bg-slate-800/80 border border-slate-700/60
-                  text-slate-100 text-sm placeholder-slate-600
+                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
+                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
                   focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50
                   transition-all duration-200
                   [appearance:textfield]
