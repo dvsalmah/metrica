@@ -1,26 +1,27 @@
 'use client';
 
 import { BarChart2, Sun, Moon, FlaskConical } from 'lucide-react';
-import { useState } from 'react';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 interface TopbarProps {
   onLoadSampleData?: () => void;
 }
 
 export default function Topbar({ onLoadSampleData }: TopbarProps) {
-  const [isDark, setIsDark] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleDark = () => {
-    setIsDark((prev) => {
-      const next = !prev;
-      if (next) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      return next;
-    });
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
+
+  const isDark = theme === 'dark';
 
   return (
     <header
@@ -89,11 +90,11 @@ export default function Topbar({ onLoadSampleData }: TopbarProps) {
               active:scale-95
             "
           >
-            {isDark ? (
+            {mounted && isDark ? (
               <Sun className="w-4 h-4" />
-            ) : (
+            ) : mounted ? (
               <Moon className="w-4 h-4" />
-            )}
+            ) : null}
           </button>
         </div>
       </div>
