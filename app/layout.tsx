@@ -13,9 +13,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Metrica - Your Metrics Hub',
-  description:
-    'Metrica: Analyze Financial Metrics for your investment with real-time interactive charts.',
+  title: 'Metrica',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
