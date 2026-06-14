@@ -1,14 +1,11 @@
 import type { MacroInputs, MonthlyCashflow, CalculationResults } from '@/lib/types';
 
-// ---------------------------------------------------------------------------
 // Payback Period (PBP)
-// ---------------------------------------------------------------------------
-// Returns the interpolated month at which cumulative cashflow first becomes
-// zero or positive. Returns null if it never recovers within the data window.
 export function calculatePBP(
   initialInvestment: number,
   cashflows: MonthlyCashflow[],
-  targetPbp: number
+  targetPbp: number,
+  periodType: 'monthly' | 'yearly' = 'monthly'
 ): { pbp: number | null; pbpIsIdeal: boolean } {
   let cumulative = -Math.abs(initialInvestment);
 
@@ -18,17 +15,16 @@ export function calculatePBP(
 
     if (cumulative >= 0) {
       const fraction = previous < 0 ? Math.abs(previous) / netCashflow : 0;
-      const pbp = month - 1 + fraction;
-      return { pbp, pbpIsIdeal: pbp <= targetPbp };
+      const pbpPeriods = month - 1 + fraction;
+      const pbpMonths = periodType === 'yearly' ? pbpPeriods * 12 : pbpPeriods;
+      return { pbp: pbpMonths, pbpIsIdeal: pbpMonths <= targetPbp };
     }
   }
 
   return { pbp: null, pbpIsIdeal: false };
 }
 
-// ---------------------------------------------------------------------------
 // Return on Investment (ROI)
-// ---------------------------------------------------------------------------
 // ROI = (Total Net Cashflow / Initial Investment) × 100
 export function calculateROI(
   initialInvestment: number,
@@ -39,33 +35,31 @@ export function calculateROI(
   return (totalCashflow / Math.abs(initialInvestment)) * 100;
 }
 
-// ---------------------------------------------------------------------------
 // Net Present Value (NPV)
-// ---------------------------------------------------------------------------
 // NPV = Σ [Cashflow_t / (1 + r)^t] − Initial Investment
-// discountRate is supplied as a percentage (e.g. 10 for 10%).
 // Monthly rate: r_monthly = (1 + r_annual)^(1/12) - 1
 export function calculateNPV(
   inputs: MacroInputs,
-  cashflows: MonthlyCashflow[]
+  cashflows: MonthlyCashflow[],
+  periodType: 'monthly' | 'yearly' = 'monthly'
 ): number {
   const annualRate = inputs.discountRate / 100;
-  const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
+  const ratePerPeriod = periodType === 'monthly' 
+    ? Math.pow(1 + annualRate, 1 / 12) - 1
+    : annualRate;
 
   const pvOfCashflows = cashflows.reduce((sum, { month, netCashflow }) => {
-    return sum + netCashflow / Math.pow(1 + monthlyRate, month);
+    return sum + netCashflow / Math.pow(1 + ratePerPeriod, month);
   }, 0);
 
   return pvOfCashflows - Math.abs(inputs.initialInvestment);
 }
 
-// ---------------------------------------------------------------------------
 // Internal Rate of Return (IRR)
-// ---------------------------------------------------------------------------
-// Solved via bisection. Returns annualised IRR as percentage.
 export function calculateIRR(
   initialInvestment: number,
-  cashflows: MonthlyCashflow[]
+  cashflows: MonthlyCashflow[],
+  periodType: 'monthly' | 'yearly' = 'monthly'
 ): number {
   const series: number[] = [
     -Math.abs(initialInvestment),
@@ -94,20 +88,21 @@ export function calculateIRR(
     }
   }
 
-  return (Math.pow(1 + mid, 12) - 1) * 100;
+  return periodType === 'monthly'
+    ? (Math.pow(1 + mid, 12) - 1) * 100
+    : mid * 100;
 }
 
-// ---------------------------------------------------------------------------
 // Master calculation runner
-// ---------------------------------------------------------------------------
 export function runCalculations(
   inputs: MacroInputs,
-  cashflows: MonthlyCashflow[]
+  cashflows: MonthlyCashflow[],
+  periodType: 'monthly' | 'yearly' = 'monthly'
 ): CalculationResults {
-  const { pbp, pbpIsIdeal } = calculatePBP(inputs.initialInvestment, cashflows, inputs.targetPbp);
+  const { pbp, pbpIsIdeal } = calculatePBP(inputs.initialInvestment, cashflows, inputs.targetPbp, periodType);
   const roi = calculateROI(inputs.initialInvestment, cashflows);
-  const npv = calculateNPV(inputs, cashflows);
-  const irr = calculateIRR(inputs.initialInvestment, cashflows);
+  const npv = calculateNPV(inputs, cashflows, periodType);
+  const irr = calculateIRR(inputs.initialInvestment, cashflows, periodType);
 
   return { pbp, pbpIsIdeal, roi, npv, irr };
 }
