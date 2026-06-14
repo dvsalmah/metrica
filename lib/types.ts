@@ -19,6 +19,8 @@ export interface CalculationResults {
 
 export interface UseFinancialDataReturn {
   inputs: MacroInputs;
+  periodType: 'monthly' | 'yearly';
+  projectionLength: number;
   cashflows: MonthlyCashflow[];
   results: CalculationResults;
   setInitialInvestment: (value: number) => void;
@@ -27,4 +29,6 @@ export interface UseFinancialDataReturn {
   updateCashflow: (month: number, netCashflow: number) => void;
   loadSampleData: () => void;
   resetData: () => void;
+  setPeriodType: (periodType: 'monthly' | 'yearly') => void;
+  setProjectionLength: (projectionLength: number) => void;
 }

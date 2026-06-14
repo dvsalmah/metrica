@@ -12,12 +12,30 @@ import {
 
 export function useFinancialData(): UseFinancialDataReturn {
   const [inputs, setInputs] = useState<MacroInputs>(DEFAULT_INPUTS);
-  const [cashflows, setCashflows] = useState<MonthlyCashflow[]>(generateEmptyCashflows);
+  const [periodType, setPeriodTypeState] = useState<'monthly' | 'yearly'>('monthly');
+  const [projectionLength, setProjectionLengthState] = useState<number>(3);
+  const [cashflows, setCashflows] = useState<MonthlyCashflow[]>(() => generateEmptyCashflows('monthly', 3));
 
   const results = useMemo<CalculationResults>(
-    () => runCalculations(inputs, cashflows),
-    [inputs, cashflows]
+    () => runCalculations(inputs, cashflows, periodType),
+    [inputs, cashflows, periodType]
   );
+
+  const setPeriodType = useCallback((type: 'monthly' | 'yearly') => {
+    setPeriodTypeState(type);
+    setCashflows(generateEmptyCashflows(type, projectionLength));
+  }, [projectionLength]);
+
+  const setProjectionLength = useCallback((length: number) => {
+    setProjectionLengthState(length);
+    setCashflows((prev) => {
+      const empty = generateEmptyCashflows(periodType, length);
+      return empty.map(cf => {
+        const existing = prev.find(p => p.month === cf.month);
+        return existing ? existing : cf;
+      });
+    });
+  }, [periodType]);
 
   const setInitialInvestment = useCallback((value: number) => {
     setInputs((prev) => ({ ...prev, initialInvestment: value }));
@@ -39,13 +57,15 @@ export function useFinancialData(): UseFinancialDataReturn {
 
   const loadSampleData = useCallback(() => {
     setInputs(SAMPLE_INPUTS);
-    setCashflows(buildSampleCashflows());
+    setPeriodTypeState('monthly');
+    setProjectionLengthState(3);
+    setCashflows(buildSampleCashflows('monthly', 3));
   }, []);
 
   const resetData = useCallback(() => {
     setInputs(DEFAULT_INPUTS);
-    setCashflows(generateEmptyCashflows());
-  }, []);
+    setCashflows(generateEmptyCashflows(periodType, projectionLength));
+  }, [periodType, projectionLength]);
 
   return {
     inputs,
@@ -57,5 +77,9 @@ export function useFinancialData(): UseFinancialDataReturn {
     updateCashflow,
     loadSampleData,
     resetData,
+    periodType,
+    projectionLength,
+    setPeriodType,
+    setProjectionLength,
   };
 }
