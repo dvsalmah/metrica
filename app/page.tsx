@@ -17,6 +17,7 @@ export default function DashboardPage() {
           results={hook.results}
           cashflows={hook.cashflows}
           inputs={hook.inputs}
+          periodType={hook.periodType}
         />
       </main>
     </div>

@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { Clock, TrendingUp, DollarSign, Activity } from 'lucide-react';
 import type { CalculationResults, MacroInputs, MonthlyCashflow } from '@/lib/types';
+import { Separator } from '../ui/separator';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -56,10 +57,10 @@ function MetricCard({ id, label, value, icon, accent, highlight }: MetricCardPro
     highlight === 'green'
       ? 'text-emerald-400'
       : highlight === 'red'
-      ? 'text-rose-400'
-      : highlight === 'amber'
-      ? 'text-amber-400'
-      : 'text-slate-100';
+        ? 'text-rose-400'
+        : highlight === 'amber'
+          ? 'text-amber-400'
+          : 'text-slate-100';
 
   return (
     <div
@@ -121,9 +122,8 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
     <div className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 shadow-xl">
       <p className="text-xs text-slate-400 mb-1">Month {label}</p>
       <p
-        className={`text-sm font-bold ${
-          value >= 0 ? 'text-emerald-400' : 'text-rose-400'
-        }`}
+        className={`text-sm font-bold ${value >= 0 ? 'text-emerald-400' : 'text-rose-400'
+          }`}
       >
         {value >= 0 ? '+' : ''}
         {formatCurrency(value)}
@@ -139,25 +139,48 @@ interface RightPanelProps {
   results: CalculationResults;
   cashflows: MonthlyCashflow[];
   inputs: MacroInputs;
+  periodType: 'monthly' | 'yearly';
 }
 
 export default function RightPanel({
   results,
   cashflows,
   inputs,
+  periodType,
 }: RightPanelProps) {
+  let monthlyCashflows: { month: number; netCashflow: number }[] = [];
+
+  if (periodType === 'yearly') {
+    // Expand 1 year into 12 months so the chart always plots monthly points
+    cashflows.forEach((cf) => {
+      const monthlyAmount = cf.netCashflow / 12;
+      const startMonth = (cf.month - 1) * 12 + 1;
+      for (let i = 0; i < 12; i++) {
+        monthlyCashflows.push({
+          month: startMonth + i,
+          netCashflow: monthlyAmount,
+        });
+      }
+    });
+  } else {
+    monthlyCashflows = cashflows;
+  }
+
   let cumulative = -Math.abs(inputs.initialInvestment);
-  const chartData = cashflows.map(({ month, netCashflow }) => {
+  const chartData = monthlyCashflows.map(({ month, netCashflow }) => {
     cumulative += netCashflow;
-    return { month, cumulative };
+    return {
+      month,
+      cumulative
+    };
   });
 
   const pbpHighlight: 'green' | 'red' | 'amber' | null =
     results.pbp === null
       ? 'red'
       : results.pbpIsIdeal
-      ? 'green'
-      : 'amber';
+        ? 'green'
+        : 'amber';
 
   const npvHighlight: 'green' | 'red' | null =
     results.npv > 0 ? 'green' : results.npv < 0 ? 'red' : null;
@@ -217,9 +240,8 @@ export default function RightPanel({
 
         {results.pbp !== null && (
           <p
-            className={`mt-3 text-xs font-medium ${
-              results.pbpIsIdeal ? 'text-emerald-400' : 'text-amber-400'
-            }`}
+            className={`mt-3 text-xs font-medium ${results.pbpIsIdeal ? 'text-emerald-400' : 'text-amber-400'
+              }`}
           >
             {results.pbpIsIdeal
               ? `✓ PBP of ${results.pbp.toFixed(1)} months is within the ${inputs.targetPbp}-month target.`
@@ -228,8 +250,7 @@ export default function RightPanel({
         )}
       </section>
 
-      {/* ── Divider ── */}
-      <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+      <Separator />
 
       {/* ── Cumulative Cashflow Chart ── */}
       <section className="flex flex-col gap-4 flex-1">
