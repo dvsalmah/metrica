@@ -66,6 +66,11 @@ export function calculateIRR(
     ...cashflows.map((c) => c.netCashflow),
   ];
 
+  const hasPositive = series.some((val) => val > 0);
+  const hasNegative = series.some((val) => val < 0);
+  
+  if (!hasPositive || !hasNegative) return NaN;
+
   const npvAtRate = (r: number): number =>
     series.reduce((sum, cf, t) => sum + cf / Math.pow(1 + r, t), 0);
 
