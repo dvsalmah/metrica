@@ -214,7 +214,7 @@ export const ThemeToggleButton2 = ({
     <button
       type="button"
       className={cn(
-        "rounded-full transition-all duration-50 active:scale-95 p-2",
+        "rounded-full transition-all duration-50 active:scale-95 p-2 shadow-xl",
         isDark ? " text-white" : " text-slate-900",
         className,
       )}
