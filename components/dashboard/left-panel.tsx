@@ -29,7 +29,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
       className="
         flex flex-col gap-6
         w-full lg:w-[380px] xl:w-[420px] shrink-0
-        overflow-y-auto
+        h-full overflow-hidden
         bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm
         border-r border-slate-200 dark:border-slate-800/60
         transition-colors duration-300
@@ -37,10 +37,10 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
       "
     >
       {/* ── Section: Macro Inputs ── */}
-      <section>
+      <section className="shrink-0">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-5 rounded-full bg-gradient-to-b " />
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
             Macro Data
           </h2>
         </div>
@@ -48,10 +48,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
         <div className="flex flex-col gap-4">
           {/* Initial Investment */}
           <div className="group">
-            <label
-              htmlFor="initial-investment-input"
-              className="block text-xs font-medium text-slate-400 mb-1.5"
-            >
+            <label htmlFor="initial-investment-input" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
               Initial Investment (IDR)
             </label>
             <div className="relative">
@@ -84,10 +81,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
 
           {/* Discount Rate */}
           <div className="group">
-            <label
-              htmlFor="discount-rate-input"
-              className="block text-xs font-medium text-slate-400 mb-1.5"
-            >
+            <label htmlFor="discount-rate-input" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
               Annual Discount Rate (%)
             </label>
             <div className="relative">
@@ -121,10 +115,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
 
           {/* Target PBP */}
           <div className="group">
-            <label
-              htmlFor="target-pbp-input"
-              className="block text-xs font-medium text-slate-400 mb-1.5"
-            >
+            <label htmlFor="target-pbp-input" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
               Target PBP (Months)
             </label>
             <div className="relative">
@@ -158,10 +149,10 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
           {/* Projection Settings */}
           <div className="grid grid-cols-2 gap-3">
             <div className="group">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                Period Type
+              <label htmlFor="period-type-select" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Period Type
               </label>
               <select
+                id="period-type-select"
                 value={hook.periodType}
                 onChange={(e) => hook.setPeriodType(e.target.value as 'monthly' | 'yearly')}
                 className="
@@ -202,28 +193,28 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
       <Separator />
 
       {/* ── Section: Monthly Cashflows ── */}
-      <section className="flex flex-col gap-3 flex-1">
+      <section className="flex flex-col gap-3 flex-1 min-h-0">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
           {hook.periodType === 'monthly' ? 'Monthly' : 'Yearly'} Net Cashflows
           </h2>
-          <span className="ml-auto text-xs text-slate-600 bg-slate-800 px-2 py-0.5 rounded-full">
+          <span className="ml-auto text-xs text-slate-700 bg-slate-200 dark:text-slate-300 dark:bg-slate-800 px-2 py-0.5 rounded-full">
             {hook.periodType === 'monthly' ? `${hook.projectionLength * 12} Months` : `${hook.projectionLength} Years`}
           </span>
         </div>
 
         {/* Column headers */}
         <div className="grid grid-cols-[56px_1fr] gap-3 px-1">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
             {hook.periodType === 'monthly' ? 'Month' : 'Year'}
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
             Net Cashflow (IDR)
           </span>
         </div>
 
         {/* Scrollable list */}
-        <div className="flex flex-col gap-1.5 overflow-y-auto max-h-[calc(100vh-480px)] pr-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+        <div className="flex flex-col gap-1.5 overflow-y-auto flex-1 pr-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
           {cashflows.map(({ month, netCashflow }) => (
             <div
               key={month}

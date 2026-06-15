@@ -9,7 +9,7 @@ export default function DashboardPage() {
   const hook = useFinancialData();
 
   return (
-    <div className="min-h-screen flex flex-col transition-colors duration-300">
+    <div className="h-screen flex flex-col transition-colors duration-300">
       <Topbar onLoadSampleData={hook.loadSampleData} />
       <main className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         <LeftPanel hook={hook} />
