@@ -1,6 +1,6 @@
 'use client';
 
-import { DollarSign, Percent, TrendingUp, Clock } from 'lucide-react';
+import { Coins, Percent, TrendingUp, Clock } from 'lucide-react';
 import type { UseFinancialDataReturn } from '@/lib/types';
 import { Input } from '../ui/input';
 import { Separator } from '../ui/separator';
@@ -39,7 +39,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
       {/* ── Section: Macro Inputs ── */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 rounded-full bg-gradient-to-b from-violet-400 to-indigo-500" />
+          <div className="w-1 h-5 rounded-full bg-gradient-to-b " />
           <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400">
             Macro Data
           </h2>
@@ -56,7 +56,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-                <DollarSign className="w-4 h-4" />
+                <Coins className="w-4 h-4" />
               </span>
               <Input
                 id="initial-investment-input"
@@ -72,7 +72,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                   w-full pl-9 pr-4 py-2.5 rounded-xl
                   bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
                   text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
-                  focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50
+                  focus:outline-none focus:ring-2 
                   transition-all duration-200
                   [appearance:textfield]
                   [&::-webkit-outer-spin-button]:appearance-none
@@ -109,7 +109,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                   w-full pl-9 pr-4 py-2.5 rounded-xl
                   bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
                   text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
-                  focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50
+                  focus:outline-none focus:ring-2 
                   transition-all duration-200
                   [appearance:textfield]
                   [&::-webkit-outer-spin-button]:appearance-none
@@ -145,7 +145,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                   w-full pl-9 pr-4 py-2.5 rounded-xl
                   bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
                   text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
-                  focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50
+                  focus:outline-none focus:ring-2
                   transition-all duration-200
                   [appearance:textfield]
                   [&::-webkit-outer-spin-button]:appearance-none
@@ -167,13 +167,12 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                 className="
                   w-full px-3 py-2.5 rounded-xl h-[42px]
                   bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
-                  text-slate-900 dark:text-slate-100 text-sm
-                  focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50
+                  text-slate-900 dark:text-slate-100 text-sm focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50
                   transition-all duration-200
                 "
               >
-                <option value="monthly">Bulanan</option>
-                <option value="yearly">Tahunan</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
               </select>
             </div>
             <div className="group">
@@ -182,16 +181,16 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
               </label>
               <Input
                 type="number"
-                min={3}
-                max={5}
+                min={2}
+                max={10}
                 step={1}
                 value={hook.projectionLength}
-                onChange={(e) => hook.setProjectionLength(parseInt(e.target.value) || 3)}
+                onChange={(e) => hook.setProjectionLength(parseInt(e.target.value) || 2)}
                 className="
                   w-full px-3 py-2.5 rounded-xl h-[42px]
                   bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
                   text-slate-900 dark:text-slate-100 text-sm
-                  focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50
+                  focus:outline-none focus:ring-2 
                   transition-all duration-200
                 "
               />
@@ -205,9 +204,8 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
       {/* ── Section: Monthly Cashflows ── */}
       <section className="flex flex-col gap-3 flex-1">
         <div className="flex items-center gap-2">
-          <div className="w-1 h-5 rounded-full bg-gradient-to-b from-emerald-400 to-teal-500" />
           <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400">
-            {hook.periodType === 'monthly' ? 'Monthly' : 'Yearly'} Net Cashflows
+          {hook.periodType === 'monthly' ? 'Monthly' : 'Yearly'} Net Cashflows
           </h2>
           <span className="ml-auto text-xs text-slate-600 bg-slate-800 px-2 py-0.5 rounded-full">
             {hook.periodType === 'monthly' ? `${hook.projectionLength * 12} Months` : `${hook.projectionLength} Years`}
@@ -231,7 +229,7 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
               key={month}
               className="
                 grid grid-cols-[56px_1fr] items-center gap-3
-                group
+                group hover:bg-slate-800/30 transition-colors duration-150 rounded-lg px-1 
               "
             >
               {/* Month badge */}
@@ -239,9 +237,9 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                 className="
                   flex items-center justify-center
                   h-9 rounded-lg
-                  bg-slate-800/60 border border-slate-700/40
+                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
+                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
                   text-xs font-semibold text-slate-500
-                  group-focus-within:border-violet-500/40 group-focus-within:text-violet-400
                   transition-colors duration-150
                 "
               >
@@ -261,9 +259,9 @@ export default function LeftPanel({ hook }: LeftPanelProps) {
                 }
                 className="
                   w-full px-3 py-2 rounded-lg h-9
-                  bg-slate-800/60 border border-slate-700/40
-                  text-slate-200 text-sm placeholder-slate-700
-                  focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/40
+                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
+                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
+                  focus:outline-none focus:ring-2
                   transition-all duration-150
                   [appearance:textfield]
                   [&::-webkit-outer-spin-button]:appearance-none
