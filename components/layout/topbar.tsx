@@ -5,13 +5,8 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { useThemeToggle } from '@/components/ui/skiper26';
 import { ThemeToggleButton2 } from '@/components/ui/skiper4';
-import { Button } from '../ui/button';
 
-interface TopbarProps {
-  onLoadSampleData?: () => void;
-}
-
-export default function Topbar({ onLoadSampleData }: TopbarProps) {
+export default function Topbar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -47,25 +42,6 @@ export default function Topbar({ onLoadSampleData }: TopbarProps) {
 
         {/* ── Right Controls ── */}
         <div className="flex items-center gap-3">
-          <Button
-          variant={'outline'}
-            id="load-sample-data-btn"
-            onClick={onLoadSampleData}
-            className="
-              flex items-center gap-2
-              px-4 py-2 rounded-xl text-sm font-medium
-              bg-primary-foregroundm
-              text-foreground dark:text-white
-              transition-all duration-200
-              active:scale-95
-              cursor-pointer
-            "
-          >
-            <CardSim className="w-4 h-4" />
-            <span className="hidden sm:inline">Load Sample Data</span>
-            <span className="sm:hidden">Sample</span>
-          </Button>
-
           {mounted && (
             <ThemeToggleButton2 
               isDark={isDark}
