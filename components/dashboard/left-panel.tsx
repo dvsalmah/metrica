@@ -1,268 +1,300 @@
 'use client';
 
-import { Coins, Percent, TrendingUp, Clock } from 'lucide-react';
-import type { UseFinancialDataReturn } from '@/lib/types';
+import { useEffect, useRef } from 'react';
+import { Coins, Percent, Clock, Plus, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { projectPayloadSchema, type ProjectPayload } from '@/lib/types';
+import { useProjectStore } from '@/lib/store/use-project-store';
 import { Input } from '../ui/input';
 import { Separator } from '../ui/separator';
-import { DropdownMenuSub } from '../ui/dropdown-menu';
 
-interface LeftPanelProps {
-  hook: UseFinancialDataReturn;
-}
+export default function LeftPanel() {
+  const { payload, setPayload } = useProjectStore();
 
-function formatNumberInput(value: number): string {
-  return value === 0 ? '' : String(value);
-}
+  const form = useForm<ProjectPayload>({
+    resolver: zodResolver(projectPayloadSchema),
+    defaultValues: payload,
+    mode: 'onChange',
+  });
 
-export default function LeftPanel({ hook }: LeftPanelProps) {
+  const { control, register, watch, reset } = form;
+
   const {
-    inputs,
-    cashflows,
-    setInitialInvestment,
-    setDiscountRate,
-    updateCashflow,
-  } = hook;
+    fields: revenueFields,
+    append: appendRevenue,
+    remove: removeRevenue,
+  } = useFieldArray({ control, name: 'revenues' });
+
+  const {
+    fields: opexFields,
+    append: appendOpex,
+    remove: removeOpex,
+  } = useFieldArray({ control, name: 'opex' });
+
+  const formValues = watch();
+  const prevFormValues = useRef<ProjectPayload>(payload);
+
+  // Sync from Zustand to Form (e.g. when Load Sample Data is clicked)
+  useEffect(() => {
+    if (JSON.stringify(payload) !== JSON.stringify(prevFormValues.current)) {
+      reset(payload);
+      prevFormValues.current = payload;
+    }
+  }, [payload, reset]);
+
+  // Sync from Form to Zustand
+  useEffect(() => {
+    const result = projectPayloadSchema.safeParse(formValues);
+    if (result.success) {
+      if (JSON.stringify(result.data) !== JSON.stringify(payload)) {
+        prevFormValues.current = result.data;
+        setPayload(result.data);
+      }
+    }
+  }, [formValues, payload, setPayload]);
 
   return (
     <aside
       id="left-panel"
       className="
         flex flex-col gap-6
-        w-full lg:w-[380px] xl:w-[420px] shrink-0
+        w-full lg:w-[420px] xl:w-[460px] shrink-0
         h-full overflow-hidden
-        bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm
+        bg-white/95 dark:bg-slate-900/95 backdrop-blur-md
         border-r border-slate-200 dark:border-slate-800/60
+        shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)]
         transition-colors duration-300
-        p-6
+        p-6 relative z-10
       "
     >
-      {/* ── Section: Macro Inputs ── */}
-      <section className="shrink-0">
-        <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-col gap-6 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-2">
+        
+        {/* ── Section: Macro Inputs ── */}
+        <section className="shrink-0">
+          <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-5 rounded-full bg-gradient-to-b " />
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
-            Macro Data
-          </h2>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          {/* Initial Investment */}
-          <div className="group">
-            <label htmlFor="initial-investment-input" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
-              Initial Investment (IDR)
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-                <Coins className="w-4 h-4" />
-              </span>
-              <Input
-                id="initial-investment-input"
-                type="number"
-                min={0}
-                step={1000000}
-                placeholder="e.g. 25000000"
-                value={formatNumberInput(inputs.initialInvestment)}
-                onChange={(e) =>
-                  setInitialInvestment(parseFloat(e.target.value) || 0)
-                }
-                className="
-                  w-full pl-9 pr-4 py-2.5 rounded-xl
-                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
-                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
-                  focus:outline-none focus:ring-2 
-                  transition-all duration-200
-                  [appearance:textfield]
-                  [&::-webkit-outer-spin-button]:appearance-none
-                  [&::-webkit-inner-spin-button]:appearance-none
-                "
-              />
-            </div>
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+              Macro Data
+            </h2>
           </div>
 
-          {/* Discount Rate */}
-          <div className="group">
-            <label htmlFor="discount-rate-input" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
-              Annual Discount Rate (%)
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-                <Percent className="w-4 h-4" />
-              </span>
-              <Input
-                id="discount-rate-input"
-                type="number"
-                min={0}
-                max={100}
-                step={0.5}
-                placeholder="e.g. 10"
-                value={formatNumberInput(inputs.discountRate)}
-                onChange={(e) =>
-                  setDiscountRate(parseFloat(e.target.value) || 0)
-                }
-                className="
-                  w-full pl-9 pr-4 py-2.5 rounded-xl
-                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
-                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
-                  focus:outline-none focus:ring-2 
-                  transition-all duration-200
-                  [appearance:textfield]
-                  [&::-webkit-outer-spin-button]:appearance-none
-                  [&::-webkit-inner-spin-button]:appearance-none
-                "
-              />
-            </div>
-          </div>
-
-          {/* Target PBP */}
-          <div className="group">
-            <label htmlFor="target-pbp-input" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
-              Target PBP (Months)
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-                <Clock className="w-4 h-4" />
-              </span>
-              <Input
-                id="target-pbp-input"
-                type="number"
-                min={0}
-                step={1}
-                placeholder="e.g. 18"
-                value={formatNumberInput(inputs.targetPbp)}
-                onChange={(e) =>
-                  hook.setTargetPbp(parseFloat(e.target.value) || 0)
-                }
-                className="
-                  w-full pl-9 pr-4 py-2.5 rounded-xl
-                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
-                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
-                  focus:outline-none focus:ring-2
-                  transition-all duration-200
-                  [appearance:textfield]
-                  [&::-webkit-outer-spin-button]:appearance-none
-                  [&::-webkit-inner-spin-button]:appearance-none
-                "
-              />
-            </div>
-          </div>
-
-          {/* Projection Settings */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-4">
+            {/* Initial Investment */}
             <div className="group">
-              <label htmlFor="period-type-select" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Period Type
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                Initial Investment (IDR)
               </label>
-              <select
-                id="period-type-select"
-                value={hook.periodType}
-                onChange={(e) => hook.setPeriodType(e.target.value as 'monthly' | 'yearly')}
-                className="
-                  w-full px-3 py-2.5 rounded-xl h-[42px]
-                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
-                  text-slate-900 dark:text-slate-100 text-sm focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50
-                  transition-all duration-200
-                "
-              >
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+                  <Coins className="w-4 h-4" />
+                </span>
+                <Input
+                  type="number"
+                  step={1000000}
+                  {...register('initialInvestment', { valueAsNumber: true })}
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-900 dark:text-slate-100 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
             </div>
-            <div className="group">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                Length (Years)
-              </label>
-              <Input
-                type="number"
-                min={2}
-                max={10}
-                step={1}
-                value={hook.projectionLength}
-                onChange={(e) => hook.setProjectionLength(parseInt(e.target.value) || 2)}
-                className="
-                  w-full px-3 py-2.5 rounded-xl h-[42px]
-                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
-                  text-slate-900 dark:text-slate-100 text-sm
-                  focus:outline-none focus:ring-2 
-                  transition-all duration-200
-                "
-              />
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <Separator />
-
-      {/* ── Section: Monthly Cashflows ── */}
-      <section className="flex flex-col gap-3 flex-1 min-h-0">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
-          {hook.periodType === 'monthly' ? 'Monthly' : 'Yearly'} Net Cashflows
-          </h2>
-          <span className="ml-auto text-xs text-slate-700 bg-slate-200 dark:text-slate-300 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-            {hook.periodType === 'monthly' ? `${hook.projectionLength * 12} Months` : `${hook.projectionLength} Years`}
-          </span>
-        </div>
-
-        {/* Column headers */}
-        <div className="grid grid-cols-[56px_1fr] gap-3 px-1">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
-            {hook.periodType === 'monthly' ? 'Month' : 'Year'}
-          </span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
-            Net Cashflow (IDR)
-          </span>
-        </div>
-
-        {/* Scrollable list */}
-        <div className="flex flex-col gap-1.5 overflow-y-auto flex-1 pr-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-          {cashflows.map(({ month, netCashflow }) => (
-            <div
-              key={month}
-              className="
-                grid grid-cols-[56px_1fr] items-center gap-3
-                group hover:bg-slate-800/30 transition-colors duration-150 rounded-lg px-1 
-              "
-            >
-              {/* Month badge */}
-              <div
-                className="
-                  flex items-center justify-center
-                  h-9 rounded-lg
-                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
-                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
-                  text-xs font-semibold text-slate-500
-                  transition-colors duration-150
-                "
-              >
-                <TrendingUp className="w-3 h-3 mr-1 opacity-60" />
-                {month}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Discount Rate */}
+              <div className="group">
+                <label className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                  Discount (%)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500">
+                    <Percent className="w-3.5 h-3.5" />
+                  </span>
+                  <Input
+                    type="number"
+                    step={0.5}
+                    {...register('discountRate', { valueAsNumber: true })}
+                    className="w-full pl-8 pr-2 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-900 dark:text-slate-100 text-sm [appearance:textfield]"
+                  />
+                </div>
               </div>
 
-              {/* Cashflow input */}
-              <Input
-                id={`cashflow-period-${month}`}
-                type="number"
-                step={100000}
-                placeholder="0"
-                value={netCashflow === 0 ? '' : String(netCashflow)}
-                onChange={(e) =>
-                  updateCashflow(month, parseFloat(e.target.value) || 0)
-                }
-                className="
-                  w-full px-3 py-2 rounded-lg h-9
-                  bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60
-                  text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-600
-                  focus:outline-none focus:ring-2
-                  transition-all duration-150
-                  [appearance:textfield]
-                  [&::-webkit-outer-spin-button]:appearance-none
-                  [&::-webkit-inner-spin-button]:appearance-none
-                "
-              />
+              {/* Target PBP */}
+              <div className="group">
+                <label className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                  Target (Mo)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500">
+                    <Clock className="w-3.5 h-3.5" />
+                  </span>
+                  <Input
+                    type="number"
+                    step={1}
+                    {...register('targetPbp', { valueAsNumber: true })}
+                    className="w-full pl-8 pr-2 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-900 dark:text-slate-100 text-sm [appearance:textfield]"
+                  />
+                </div>
+              </div>
+
+              {/* Period Type */}
+              <div className="group">
+                <label className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                  Period Type
+                </label>
+                <div className="relative">
+                  <select
+                    disabled
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-900 dark:text-slate-100 text-sm opacity-70 cursor-not-allowed appearance-none"
+                  >
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Projection Length */}
+              <div className="group">
+                <label className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                  Length (Yrs)
+                </label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    step={1}
+                    {...register('projectionLength', { valueAsNumber: true })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-900 dark:text-slate-100 text-sm"
+                  />
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
+
+        <Separator className="bg-slate-200 dark:bg-slate-800" />
+
+        {/* ── Section: Revenue Streams ── */}
+        <section className="shrink-0 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-500" />
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+                Revenue Streams
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => appendRevenue({ id: crypto.randomUUID(), name: '', monthlyRevenue: 0, growthRate: 0 })}
+              className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-500"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {revenueFields.map((field, index) => (
+              <div key={field.id} className="p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-xl relative group">
+                <button
+                  type="button"
+                  onClick={() => removeRevenue(index)}
+                  className="absolute top-2 right-2 p-1 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <div className="grid grid-cols-1 gap-2 pr-6">
+                  <Input
+                    placeholder="Revenue Name (e.g. Subscriptions)"
+                    {...register(`revenues.${index}.name` as const)}
+                    className="h-8 text-sm border-transparent bg-transparent px-1 focus-visible:ring-1 focus-visible:bg-white dark:focus-visible:bg-slate-900 font-medium"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider pl-1">Monthly (IDR)</span>
+                      <Input
+                        type="number"
+                        {...register(`revenues.${index}.monthlyRevenue` as const, { valueAsNumber: true })}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider pl-1">Ann. Growth (%)</span>
+                      <Input
+                        type="number"
+                        {...register(`revenues.${index}.growthRate` as const, { valueAsNumber: true })}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {revenueFields.length === 0 && (
+              <p className="text-xs text-slate-400 italic text-center py-4">No revenue streams added.</p>
+            )}
+          </div>
+        </section>
+
+        <Separator className="bg-slate-200 dark:bg-slate-800" />
+
+        {/* ── Section: OPEX Items ── */}
+        <section className="shrink-0 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingDown className="w-4 h-4 text-rose-500" />
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+                Operational Expenses
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => appendOpex({ id: crypto.randomUUID(), name: '', monthlyCost: 0, escalationRate: 0 })}
+              className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-500"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {opexFields.map((field, index) => (
+              <div key={field.id} className="p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-xl relative group">
+                <button
+                  type="button"
+                  onClick={() => removeOpex(index)}
+                  className="absolute top-2 right-2 p-1 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <div className="grid grid-cols-1 gap-2 pr-6">
+                  <Input
+                    placeholder="Expense Name (e.g. Server Cost)"
+                    {...register(`opex.${index}.name` as const)}
+                    className="h-8 text-sm border-transparent bg-transparent px-1 focus-visible:ring-1 focus-visible:bg-white dark:focus-visible:bg-slate-900 font-medium"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider pl-1">Monthly (IDR)</span>
+                      <Input
+                        type="number"
+                        {...register(`opex.${index}.monthlyCost` as const, { valueAsNumber: true })}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider pl-1">Escalation (%)</span>
+                      <Input
+                        type="number"
+                        {...register(`opex.${index}.escalationRate` as const, { valueAsNumber: true })}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {opexFields.length === 0 && (
+              <p className="text-xs text-slate-400 italic text-center py-4">No operational expenses added.</p>
+            )}
+          </div>
+        </section>
+
+      </div>
     </aside>
   );
 }

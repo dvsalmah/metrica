@@ -12,7 +12,7 @@ export default function DashboardPage() {
     <div className="h-screen flex flex-col transition-colors duration-300">
       <Topbar onLoadSampleData={hook.loadSampleData} />
       <main className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        <LeftPanel hook={hook} />
+        <LeftPanel />
         <RightPanel
           results={hook.results}
           cashflows={hook.cashflows}
