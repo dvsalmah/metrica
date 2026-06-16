@@ -40,6 +40,12 @@ export interface MonthlyCashflow {
   netCashflow: number;
 }
 
+export interface MacroInputs {
+  initialInvestment: number;
+  discountRate: number;
+  targetPbp: number;
+}
+
 export interface CalculationResults {
   pbp: number | null;
   pbpIsIdeal: boolean;
