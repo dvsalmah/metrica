@@ -14,9 +14,25 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Metrica',
+  description: 'Metrica is a modern web application for data analysis and visualization.',
+  openGraph: {
+    title: 'Metrica | Financial Metric Visualizer',
+    description: 'Metrica is a modern web application for data analysis and visualization.',
+    images: 'preview-1.png',
+    siteName: 'Metrica',
+    type: 'website',
+  },
   icons: {
     icon: '/favicon.ico',
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Metrica | Financial Metric Visualizer',
+    description: 'Metrica is a modern web application for data analysis and visualization.',
+    images: 'preview-1.png',
+  },
+  category: 'Finance',
+  classification: 'Finance',
 };
 
 export default function RootLayout({
