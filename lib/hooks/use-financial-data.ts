@@ -1,85 +1,55 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
-import type { MacroInputs, MonthlyCashflow, CalculationResults, UseFinancialDataReturn } from '@/lib/types';
-import { runCalculations } from '@/lib/calculations';
-import {
-  generateEmptyCashflows,
-  buildSampleCashflows,
-  DEFAULT_INPUTS,
-  SAMPLE_INPUTS,
-} from '@/lib/services/financial';
+import { useMemo } from 'react';
+import type { CalculationResults, MonthlyCashflow } from '@/lib/types';
+import { runCalculations, generateCompoundingCashflows } from '@/lib/calculations';
+import { useProjectStore } from '../store/use-project-store';
 
-export function useFinancialData(): UseFinancialDataReturn {
-  const [inputs, setInputs] = useState<MacroInputs>(DEFAULT_INPUTS);
-  const [periodType, setPeriodTypeState] = useState<'monthly' | 'yearly'>('monthly');
-  const [projectionLength, setProjectionLengthState] = useState<number>(3);
-  const [cashflows, setCashflows] = useState<MonthlyCashflow[]>(() => generateEmptyCashflows('monthly', 3));
+export function useFinancialData() {
+  const { payload, setPayload, resetData, loadSampleData } = useProjectStore();
 
-  const results = useMemo<CalculationResults>(
-    () => runCalculations(inputs, cashflows, periodType),
-    [inputs, cashflows, periodType]
-  );
+  const cashflows = useMemo<MonthlyCashflow[]>(() => {
+    // Generate actual monthly data
+    const totalMonths = (payload.projectionLength || 1) * 12;
+    const monthlyCFs = generateCompoundingCashflows(payload.revenues, payload.opex, totalMonths);
 
-  const setPeriodType = useCallback((type: 'monthly' | 'yearly') => {
-    setPeriodTypeState(type);
-    setCashflows(generateEmptyCashflows(type, projectionLength));
-  }, [projectionLength]);
-
-  const setProjectionLength = useCallback((length: number) => {
-    setProjectionLengthState(length);
-    setCashflows((prev) => {
-      const empty = generateEmptyCashflows(periodType, length);
-      return empty.map(cf => {
-        const existing = prev.find(p => p.month === cf.month);
-        return existing ? existing : cf;
+    // Aggregate into yearly cashflows
+    const yearlyCFs: MonthlyCashflow[] = [];
+    for (let year = 0; year < (payload.projectionLength || 1); year++) {
+      let yearlySum = 0;
+      for (let m = 0; m < 12; m++) {
+        yearlySum += monthlyCFs[year * 12 + m].netCashflow;
+      }
+      yearlyCFs.push({
+        month: year + 1, // Representing Year 1, Year 2, etc.
+        netCashflow: yearlySum,
       });
-    });
-  }, [periodType]);
+    }
 
-  const setInitialInvestment = useCallback((value: number) => {
-    setInputs((prev) => ({ ...prev, initialInvestment: value }));
-  }, []);
+    return yearlyCFs;
+  }, [payload.revenues, payload.opex, payload.projectionLength]);
 
-  const setDiscountRate = useCallback((value: number) => {
-    setInputs((prev) => ({ ...prev, discountRate: value }));
-  }, []);
-
-  const setTargetPbp = useCallback((value: number) => {
-    setInputs((prev) => ({ ...prev, targetPbp: value }));
-  }, []);
-
-  const updateCashflow = useCallback((month: number, netCashflow: number) => {
-    setCashflows((prev) =>
-      prev.map((cf) => (cf.month === month ? { ...cf, netCashflow } : cf))
-    );
-  }, []);
-
-  const loadSampleData = useCallback(() => {
-    setInputs(SAMPLE_INPUTS);
-    setPeriodTypeState('monthly');
-    setProjectionLengthState(3);
-    setCashflows(buildSampleCashflows('monthly', 3));
-  }, []);
-
-  const resetData = useCallback(() => {
-    setInputs(DEFAULT_INPUTS);
-    setCashflows(generateEmptyCashflows(periodType, projectionLength));
-  }, [periodType, projectionLength]);
+  const results = useMemo<CalculationResults>(() => {
+    const macroInputs = {
+      initialInvestment: payload.initialInvestment,
+      discountRate: payload.discountRate,
+      targetPbp: payload.targetPbp,
+    };
+    return runCalculations(macroInputs, cashflows, 'yearly');
+  }, [payload.initialInvestment, payload.discountRate, payload.targetPbp, cashflows]);
 
   return {
-    inputs,
+    payload,
+    inputs: {
+      initialInvestment: payload.initialInvestment,
+      discountRate: payload.discountRate,
+      targetPbp: payload.targetPbp,
+    },
     cashflows,
     results,
-    setInitialInvestment,
-    setDiscountRate,
-    setTargetPbp,
-    updateCashflow,
-    loadSampleData,
+    setPayload,
     resetData,
-    periodType,
-    projectionLength,
-    setPeriodType,
-    setProjectionLength,
+    loadSampleData,
+    periodType: 'yearly' as const,
   };
 }

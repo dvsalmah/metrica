@@ -1,4 +1,31 @@
-import type { MacroInputs, MonthlyCashflow, CalculationResults } from '@/lib/types';
+import type { MacroInputs, MonthlyCashflow, CalculationResults, RevenueItem, OpexItem } from '@/lib/types';
+
+export function generateCompoundingCashflows(revenues: RevenueItem[], opex: OpexItem[], months: number = 24): MonthlyCashflow[] {
+  const cashflows: MonthlyCashflow[] = [];
+
+  for (let t = 1; t <= months; t++) {
+    const yearIndex = Math.floor((t - 1) / 12);
+
+    let totalRevenue = 0;
+    for (const rev of revenues) {
+      const compoundedRevenue = rev.monthlyRevenue * Math.pow(1 + rev.growthRate / 100, yearIndex);
+      totalRevenue += compoundedRevenue;
+    }
+
+    let totalOpex = 0;
+    for (const op of opex) {
+      const compoundedOpex = op.monthlyCost * Math.pow(1 + op.escalationRate / 100, yearIndex);
+      totalOpex += compoundedOpex;
+    }
+
+    cashflows.push({
+      month: t,
+      netCashflow: totalRevenue - totalOpex,
+    });
+  }
+
+  return cashflows;
+}
 
 // Payback Period (PBP)
 export function calculatePBP(
@@ -25,7 +52,6 @@ export function calculatePBP(
 }
 
 // Return on Investment (ROI)
-// ROI = (Total Net Cashflow / Initial Investment) × 100
 export function calculateROI(
   initialInvestment: number,
   cashflows: MonthlyCashflow[]
@@ -36,8 +62,6 @@ export function calculateROI(
 }
 
 // Net Present Value (NPV)
-// NPV = Σ [Cashflow_t / (1 + r)^t] − Initial Investment
-// Monthly rate: r_monthly = (1 + r_annual)^(1/12) - 1
 export function calculateNPV(
   inputs: MacroInputs,
   cashflows: MonthlyCashflow[],
@@ -56,7 +80,7 @@ export function calculateNPV(
 }
 
 // Internal Rate of Return (IRR)
-export function calculateIRR(
+export function executeNewtonRaphsonIRR(
   initialInvestment: number,
   cashflows: MonthlyCashflow[],
   periodType: 'monthly' | 'yearly' = 'monthly'
@@ -65,11 +89,6 @@ export function calculateIRR(
     -Math.abs(initialInvestment),
     ...cashflows.map((c) => c.netCashflow),
   ];
-
-  const hasPositive = series.some((val) => val > 0);
-  const hasNegative = series.some((val) => val < 0);
-  
-  if (!hasPositive || !hasNegative) return NaN;
 
   const npvAtRate = (r: number): number =>
     series.reduce((sum, cf, t) => sum + cf / Math.pow(1 + r, t), 0);
@@ -98,6 +117,34 @@ export function calculateIRR(
     : mid * 100;
 }
 
+export function calculateSafeIRR(
+  initialInvestment: number,
+  cashflows: MonthlyCashflow[],
+  periodType: 'monthly' | 'yearly' = 'monthly'
+): number {
+  const series: number[] = [
+    -Math.abs(initialInvestment),
+    ...cashflows.map((c) => c.netCashflow),
+  ];
+
+  const hasNegative = series.some(val => val < 0);
+  const hasPositive = series.some(val => val > 0);
+  
+  if (!hasNegative || !hasPositive) {
+    return 0; // Batasan aman jika data belum valid/kosong
+  }
+  
+  try {
+    const irrValue = executeNewtonRaphsonIRR(initialInvestment, cashflows, periodType);
+    if (isNaN(irrValue) || !isFinite(irrValue) || irrValue > 10000) {
+      return NaN;
+    }
+    return irrValue;
+  } catch (error) {
+    return NaN;
+  }
+}
+
 // Master calculation runner
 export function runCalculations(
   inputs: MacroInputs,
@@ -107,7 +154,7 @@ export function runCalculations(
   const { pbp, pbpIsIdeal } = calculatePBP(inputs.initialInvestment, cashflows, inputs.targetPbp, periodType);
   const roi = calculateROI(inputs.initialInvestment, cashflows);
   const npv = calculateNPV(inputs, cashflows, periodType);
-  const irr = calculateIRR(inputs.initialInvestment, cashflows, periodType);
+  const irr = calculateSafeIRR(inputs.initialInvestment, cashflows, periodType);
 
   return { pbp, pbpIsIdeal, roi, npv, irr };
 }
