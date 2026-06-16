@@ -35,16 +35,8 @@ export type RevenueItem = z.infer<typeof revenueItemSchema>;
 export type OpexItem = z.infer<typeof opexItemSchema>;
 export type ProjectPayload = z.infer<typeof projectPayloadSchema>;
 
-export interface MonthlyCashflow {
-  month: number;
-  netCashflow: number;
-}
-
-export interface MacroInputs {
-  initialInvestment: number;
-  discountRate: number;
-  targetPbp: number;
-}
+// Derived from generalCashflowSchema — single source of truth for cashflow shape
+export type MonthlyCashflow = z.infer<typeof generalCashflowSchema>;
 
 export interface CalculationResults {
   pbp: number | null;

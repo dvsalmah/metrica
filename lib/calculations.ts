@@ -1,4 +1,11 @@
-import type { MacroInputs, MonthlyCashflow, CalculationResults, RevenueItem, OpexItem } from '@/lib/types';
+import type { MonthlyCashflow, CalculationResults, RevenueItem, OpexItem } from '@/lib/types';
+
+// Internal type — not exported from types.ts anymore
+interface MacroInputs {
+  initialInvestment: number;
+  discountRate: number;
+  targetPbp: number;
+}
 
 export function generateCompoundingCashflows(revenues: RevenueItem[], opex: OpexItem[], months: number = 24): MonthlyCashflow[] {
   const cashflows: MonthlyCashflow[] = [];
@@ -79,8 +86,8 @@ export function calculateNPV(
   return pvOfCashflows - Math.abs(inputs.initialInvestment);
 }
 
-// Internal Rate of Return (IRR)
-export function executeNewtonRaphsonIRR(
+// Internal Rate of Return (IRR) — not exported, used only by calculateSafeIRR
+function executeNewtonRaphsonIRR(
   initialInvestment: number,
   cashflows: MonthlyCashflow[],
   periodType: 'monthly' | 'yearly' = 'monthly'

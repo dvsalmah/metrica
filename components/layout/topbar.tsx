@@ -1,13 +1,10 @@
 'use client';
 
-import { BarChart2, Sun, Moon, CardSim } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { useThemeToggle } from '@/components/ui/skiper26';
 import { ThemeToggleButton2 } from '@/components/ui/skiper4';
 
 export default function Topbar() {
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch
