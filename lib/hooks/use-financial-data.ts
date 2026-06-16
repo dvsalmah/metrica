@@ -9,11 +9,17 @@ export function useFinancialData() {
   const { payload, setPayload, resetData, loadSampleData } = useProjectStore();
 
   const cashflows = useMemo<MonthlyCashflow[]>(() => {
-    // Generate actual monthly data
+    if (payload.mode === 'general') {
+      return payload.generalCashflows.map((c) => ({
+        month: c.month,
+        netCashflow: c.netCashflow,
+      }));
+    }
+
+    // Detailed mode
     const totalMonths = (payload.projectionLength || 1) * 12;
     const monthlyCFs = generateCompoundingCashflows(payload.revenues, payload.opex, totalMonths);
 
-    // Aggregate into yearly cashflows
     const yearlyCFs: MonthlyCashflow[] = [];
     for (let year = 0; year < (payload.projectionLength || 1); year++) {
       let yearlySum = 0;
@@ -21,13 +27,13 @@ export function useFinancialData() {
         yearlySum += monthlyCFs[year * 12 + m].netCashflow;
       }
       yearlyCFs.push({
-        month: year + 1, // Representing Year 1, Year 2, etc.
+        month: year + 1,
         netCashflow: yearlySum,
       });
     }
 
     return yearlyCFs;
-  }, [payload.revenues, payload.opex, payload.projectionLength]);
+  }, [payload.mode, payload.generalCashflows, payload.revenues, payload.opex, payload.projectionLength]);
 
   const results = useMemo<CalculationResults>(() => {
     const macroInputs = {
@@ -35,8 +41,8 @@ export function useFinancialData() {
       discountRate: payload.discountRate,
       targetPbp: payload.targetPbp,
     };
-    return runCalculations(macroInputs, cashflows, 'yearly');
-  }, [payload.initialInvestment, payload.discountRate, payload.targetPbp, cashflows]);
+    return runCalculations(macroInputs, cashflows, payload.periodType);
+  }, [payload.initialInvestment, payload.discountRate, payload.targetPbp, cashflows, payload.periodType]);
 
   return {
     payload,
@@ -50,6 +56,6 @@ export function useFinancialData() {
     setPayload,
     resetData,
     loadSampleData,
-    periodType: 'yearly' as const,
+    periodType: payload.periodType,
   };
 }

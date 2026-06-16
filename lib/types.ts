@@ -14,11 +14,19 @@ export const opexItemSchema = z.object({
   escalationRate: z.coerce.number().catch(0),
 });
 
+export const generalCashflowSchema = z.object({
+  month: z.number(),
+  netCashflow: z.coerce.number().catch(0),
+});
+
 export const projectPayloadSchema = z.object({
+  mode: z.enum(['general', 'detailed']),
+  periodType: z.enum(['monthly', 'yearly']),
   initialInvestment: z.coerce.number().catch(0),
   discountRate: z.coerce.number().catch(0),
   targetPbp: z.coerce.number().catch(0),
   projectionLength: z.coerce.number().catch(0),
+  generalCashflows: z.array(generalCashflowSchema),
   revenues: z.array(revenueItemSchema),
   opex: z.array(opexItemSchema),
 });
