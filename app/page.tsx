@@ -11,7 +11,7 @@ export default function DashboardPage() {
   return (
     <div className="h-screen flex flex-col transition-colors duration-300">
       <Topbar onLoadSampleData={hook.loadSampleData} />
-      <main className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+      <main className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden">
         <LeftPanel />
         <RightPanel
           results={hook.results}

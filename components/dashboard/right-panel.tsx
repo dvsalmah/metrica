@@ -182,7 +182,7 @@ export default function RightPanel({
   return (
     <div
       id="right-panel"
-      className="flex flex-col gap-6 flex-1 p-8 overflow-y-auto"
+      className="flex flex-col gap-6 flex-none lg:flex-1 h-auto lg:h-full overflow-visible lg:overflow-y-auto p-8"
     >
       {/* ── Metric Cards Grid ── */}
       <section>

@@ -35,7 +35,6 @@ export default function LeftPanel() {
   const formValues = watch();
   const prevFormValues = useRef<ProjectPayload>(payload);
 
-  // Sync from Zustand to Form (e.g. when Load Sample Data is clicked)
   useEffect(() => {
     if (JSON.stringify(payload) !== JSON.stringify(prevFormValues.current)) {
       reset(payload);
@@ -59,16 +58,16 @@ export default function LeftPanel() {
       id="left-panel"
       className="
         flex flex-col gap-6
-        w-full lg:w-[420px] xl:w-[460px] shrink-0
-        h-full overflow-hidden
+        w-full lg:w-105 xl:w-115 shrink-0
+        flex-none h-auto lg:h-full lg:overflow-hidden
         bg-white/95 dark:bg-slate-900/95 backdrop-blur-md
-        border-r border-slate-200 dark:border-slate-800/60
+        border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800/60
         shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)]
         transition-colors duration-300
         p-6 relative z-10
       "
     >
-      <div className="flex flex-col gap-6 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-2">
+      <div className="flex flex-col gap-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-2">
         
         {/* ── Section: Macro Inputs ── */}
         <section className="shrink-0">
