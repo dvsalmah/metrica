@@ -1,8 +1,31 @@
-export interface MacroInputs {
-  initialInvestment: number;
-  discountRate: number;
-  targetPbp: number;
-}
+import { z } from 'zod';
+
+export const revenueItemSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, 'Name is required'),
+  monthlyRevenue: z.coerce.number().catch(0),
+  growthRate: z.coerce.number().catch(0),
+});
+
+export const opexItemSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, 'Name is required'),
+  monthlyCost: z.coerce.number().catch(0),
+  escalationRate: z.coerce.number().catch(0),
+});
+
+export const projectPayloadSchema = z.object({
+  initialInvestment: z.coerce.number().catch(0),
+  discountRate: z.coerce.number().catch(0),
+  targetPbp: z.coerce.number().catch(0),
+  projectionLength: z.coerce.number().catch(0),
+  revenues: z.array(revenueItemSchema),
+  opex: z.array(opexItemSchema),
+});
+
+export type RevenueItem = z.infer<typeof revenueItemSchema>;
+export type OpexItem = z.infer<typeof opexItemSchema>;
+export type ProjectPayload = z.infer<typeof projectPayloadSchema>;
 
 export interface MonthlyCashflow {
   month: number;
@@ -15,20 +38,4 @@ export interface CalculationResults {
   roi: number;
   npv: number;
   irr: number;
-}
-
-export interface UseFinancialDataReturn {
-  inputs: MacroInputs;
-  periodType: 'monthly' | 'yearly';
-  projectionLength: number;
-  cashflows: MonthlyCashflow[];
-  results: CalculationResults;
-  setInitialInvestment: (value: number) => void;
-  setDiscountRate: (value: number) => void;
-  setTargetPbp: (value: number) => void;
-  updateCashflow: (month: number, netCashflow: number) => void;
-  loadSampleData: () => void;
-  resetData: () => void;
-  setPeriodType: (periodType: 'monthly' | 'yearly') => void;
-  setProjectionLength: (projectionLength: number) => void;
 }
