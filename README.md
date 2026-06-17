@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Metrica — Financial Metric Visualizer
 
-## Getting Started
+<img src="public/preview-1.png" alt="Preview" width="200" />
 
-First, run the development server:
+**Metrica** is a modern, client-side financial projection tool built with Next.js. It lets users model revenue streams, operating expenses, and investment parameters — then instantly visualizes key financial metrics (PBP, ROI, NPV, IRR) along with an interactive cashflow chart. All calculations run reactively in the browser with zero backend required.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+---
+
+## ✨ Features
+
+- **Dual Input Modes** — Switch between **Detailed** mode (itemized revenue & OPEX streams with compounding growth) and **General** mode (manual period-by-period cashflow entry).
+- **Real-Time Financial Metrics** — Automatically computes Payback Period (PBP), Return on Investment (ROI), Net Present Value (NPV), and Internal Rate of Return (IRR) as inputs change.
+- **Interactive Cashflow Chart** — Visualizes net cashflow projections using Recharts with custom tooltips and responsive layout.
+- **Compounding Growth Engine** — Revenue and OPEX streams compound annually based on user-defined growth/escalation rates over a configurable projection length.
+- **Safe IRR Calculation** — Uses a bisection-based Newton-Raphson solver with guard-rails to prevent runtime errors on edge-case inputs.
+- **Dark / Light Theme** — Smooth animated theme toggle with persistent preference via `next-themes`.
+- **Form Validation** — Zod-powered schema validation with React Hook Form for type-safe, reactive input handling.
+- **Global State Management** — Zustand store with sample data preloading and one-click reset.
+- **Compact Currency Formatting** — Human-readable financial values (e.g., `1.50B`, `250.00M`, `12.5K`).
+- **Responsive Layout** — Split-panel dashboard that adapts from stacked mobile view to side-by-side desktop layout.
+
+---
+
+## 🏗️ Project Structure
+
+```
+metrica/
+├── app/
+│   ├── globals.css          # Global styles & design tokens
+│   ├── layout.tsx           # Root layout, fonts, theme provider, SEO metadata
+│   └── page.tsx             # Main dashboard page (Topbar + LeftPanel + RightPanel)
+│
+├── components/
+│   ├── dashboard/
+│   │   ├── left-panel/      # Input forms: mode selector, macro inputs, streams, cashflows
+│   │   └── right-panel/     # Output display: metric cards, cashflow chart
+│   ├── layout/              # Topbar, theme provider
+│   └── ui/                  # Reusable primitives (Button, Input, Tabs, Separator, etc.)
+│
+├── lib/
+│   ├── calculations.ts      # Core financial engine (PBP, ROI, NPV, IRR)
+│   ├── format.ts            # Currency, percentage, and PBP formatters
+│   ├── types.ts             # Zod schemas & TypeScript types
+│   ├── utils.ts             # General utilities (cn helper)
+│   ├── hooks/               # Custom React hooks (useFinancialData)
+│   └── store/               # Zustand state management (useProjectStore)
+│
+├── public/                  # Static assets (favicon, logo, preview image)
+├── package.json
+├── tsconfig.json
+└── next.config.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Getting Started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites
 
-## Learn More
+- **Node.js** ≥ 18
+- **npm** (bundled with Node.js)
 
-To learn more about Next.js, take a look at the following resources:
+### Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/metrica.git
+cd metrica
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 2. Install dependencies
+npm install
 
-## Deploy on Vercel
+# 3. Start the development server
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Build for Production
+
+```bash
+npm run build
+npm start
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS 4 |
+| Charts | Recharts 3 |
+| Forms | React Hook Form + Zod |
+| State | Zustand |
+| UI Components | Radix UI + shadcn/ui |
+| Animations | Framer Motion |
+| Theming | next-themes |
+
+---
+
+## 📄 License
+
+This project is for educational and personal use.
