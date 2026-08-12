@@ -1,6 +1,8 @@
 # Metrica — Financial Metric Visualizer
-
+<div style="display: flex; gap: 10px;">
 <img src="public/preview-1.png" alt="Preview" width="200" />
+<img src= "public/preview-2.png" alt="Preview-2" height="200" >
+</div>
 
 **Metrica** is a modern, client-side financial projection tool built with Next.js. It lets users model revenue streams, operating expenses, and investment parameters — then instantly visualizes key financial metrics (PBP, ROI, NPV, IRR) along with an interactive cashflow chart. All calculations run reactively in the browser with zero backend required.
 
@@ -104,4 +106,5 @@ npm start
 
 ## 📄 License
 
-This project is for educational and personal use.
+This project is licensed under the MIT License.
+See the [LICENSE](LICENSE) file for details.
